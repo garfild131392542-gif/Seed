@@ -30,7 +30,7 @@
             </button>
           </div>
           <div class="flex-shrink-0 snap-start">
-            <button onclick="exportToExcel()" class="h-full px-5 py-2 rounded-xl text-sm font-bold bg-indigo-500 text-white shadow hover:bg-indigo-600 transition-all flex items-center whitespace-nowrap">
+            <button onclick="exportToExcel()" class="h-full px-5 py-2 rounded-xl text-xl font-bold bg-indigo-500 text-white shadow hover:bg-indigo-600 transition-all flex items-center justify-center whitespace-nowrap" title="Export to Excel">
               🗂️ Export to Excel
             </button>
           </div>
@@ -40,9 +40,6 @@
             </button>
             <button onclick="updateTempAxis('TempB2')" id="btn-temp" class="px-4 py-2 rounded-lg text-sm font-bold transition-all bg-white shadow text-blue-600 whitespace-nowrap">
               Temp B2
-            </button>
-            <button onclick="updateTempAxis('Climate')" id="btn-climate" class="px-4 py-2 rounded-lg text-sm font-bold transition-all text-gray-500 hover:text-gray-700 whitespace-nowrap">
-              Climate
             </button>
           </div>
           <div class="flex flex-shrink-0 bg-gray-200 p-1 rounded-xl shadow-inner border border-gray-300 snap-start">
@@ -54,13 +51,12 @@
         </div>
 
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 mx-2 md:mx-0 flex flex-col gap-4">
-          
           <div class="flex flex-col md:flex-row gap-4 items-end p-3 bg-blue-50 border border-blue-200 rounded-xl relative">
             <div class="absolute -top-3 left-4 bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-full">เส้นกราฟที่ 1 (สีน้ำเงิน)</div>
             <div class="w-full md:w-1/3">
               <label class="block text-xs font-bold text-blue-800 mb-1 uppercase">ช่วงเวลา (กะ)</label>
               <select id="f1-shift" class="w-full border border-blue-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white">
-                <option value="ALL">ทุกกะ</option><option value="Morning">กะเช้า</option><option value="Evening">กะเย็น</option><option value="Night">กะกลางคืน</option>
+                <option value="ALL">ทุกกะ</option><option value="Morning">08.00 (กะเช้า)</option><option value="Evening">16.00 (กะเย็น)</option><option value="Night">00.00 (กะกลางคืน)</option>
               </select>
             </div>
             <div class="w-full md:w-1/3">
@@ -82,7 +78,7 @@
             <div class="w-full md:w-1/3">
               <label class="block text-xs font-bold text-green-800 mb-1 uppercase">ช่วงเวลา (กะ)</label>
               <select id="f2-shift" class="w-full border border-green-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-green-500 bg-white">
-                <option value="ALL">ทุกกะ</option><option value="Morning">กะเช้า</option><option value="Evening">กะเย็น</option><option value="Night">กะกลางคืน</option>
+                <option value="ALL">ทุกกะ</option><option value="Morning">08.00 (กะเช้า)</option><option value="Evening">16.00 (กะเย็น)</option><option value="Night">00.00 (กะกลางคืน)</option>
               </select>
             </div>
             <div class="w-full md:w-1/3">
@@ -101,10 +97,10 @@
 
           <div class="flex justify-end gap-2 mt-2">
             <button onclick="clearFilters()" class="px-6 py-2 bg-gray-200 text-gray-700 font-bold rounded-lg shadow hover:bg-gray-300 text-sm">รีเซ็ต</button>
-            <button onclick="applyFilters()" class="px-8 py-2 bg-gray-800 text-white font-bold rounded-lg shadow hover:bg-gray-900 text-sm">🚀 อัปเดตกราฟเปรียบเทียบ</button>
+            <button onclick="applyFilters()" class="px-8 py-2 bg-gray-800 text-white font-bold rounded-lg shadow hover:bg-gray-900 text-sm">อัปเดตกราฟ</button>
           </div>
         </div>
-        </div>
+      </div>
 
       <div class="bg-white p-3 md:p-6 rounded-2xl shadow-xl border border-gray-100 mb-8 mx-2 md:mx-0">
         <div class="relative w-full h-[350px] md:h-[500px]">
@@ -127,11 +123,11 @@
               <tr>
                 <th class="px-4 py-3 md:px-6 md:py-4 text-xs font-semibold text-gray-600 uppercase whitespace-nowrap">กลุ่ม</th>
                 <th class="px-4 py-3 md:px-6 md:py-4 text-xs font-semibold text-gray-600 uppercase whitespace-nowrap">วันที่ (DATE)</th>
-                <th class="px-4 py-3 md:px-6 md:py-4 text-xs font-semibold text-gray-600 uppercase whitespace-nowrap">กะ (Shift)</th>
+                <th class="px-4 py-3 md:px-6 md:py-4 text-xs font-semibold text-gray-600 uppercase whitespace-nowrap">เวลา (Time)</th>
                 <th class="px-4 py-3 md:px-6 md:py-4 text-xs font-semibold text-gray-600 uppercase whitespace-nowrap">ไลน์</th>
                 <th class="px-4 py-3 md:px-6 md:py-4 text-xs font-semibold text-gray-600 uppercase whitespace-nowrap">รุ่น / Size</th>
                 <th class="px-4 py-3 md:px-6 md:py-4 text-xs font-semibold text-gray-600 uppercase whitespace-nowrap">ค่า Seed</th>
-                <th class="px-4 py-3 md:px-6 md:py-4 text-xs font-semibold text-gray-600 uppercase whitespace-nowrap">Temp / Climate</th>
+                <th class="px-4 py-3 md:px-6 md:py-4 text-xs font-semibold text-gray-600 uppercase whitespace-nowrap">Temp B2</th>
               </tr>
             </thead>
             <tbody id="table-body" class="divide-y divide-gray-100">
@@ -156,7 +152,13 @@
           <input type="hidden" id="form-no" />
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div><label class="block text-sm font-semibold text-gray-700">วันที่</label><input type="date" id="form-date" class="mt-1 w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500" /></div>
-            <div><label class="block text-sm font-semibold text-gray-700">กะ (Shift)</label><select id="form-shift" class="mt-1 w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500"><option value="Morning">Morning (เช้า)</option><option value="Evening">Evening (เย็น)</option><option value="Night">Night (กลางคืน)</option></select></div>
+            <div><label class="block text-sm font-semibold text-gray-700">เวลา (กะ)</label>
+              <select id="form-shift" class="mt-1 w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500">
+                <option value="Morning">08.00 (กะเช้า)</option>
+                <option value="Evening">16.00 (กะเย็น)</option>
+                <option value="Night">00.00 (กะกลางคืน)</option>
+              </select>
+            </div>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div><label class="block text-sm font-semibold text-gray-700">ไลน์การผลิต</label><select id="form-line" class="mt-1 w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500"><option value="">-- เลือกไลน์ --</option><option value="2">Line 2</option><option value="3">Line 3</option></select></div>
@@ -168,7 +170,6 @@
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div><label class="block text-sm font-semibold text-gray-700">Temp B2</label><input type="number" id="form-tempb2" class="mt-1 w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500" /></div>
-            <div><label class="block text-sm font-semibold text-gray-700">อุณหภูมิ <span class="text-red-500">(องศา)</span></label><input type="number" step="0.1" id="form-climate" class="mt-1 w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500" /></div>
           </div>
         </div>
         <div class="bg-gray-50 p-4 border-t border-gray-200 flex justify-between items-center sticky bottom-0">
@@ -191,15 +192,14 @@
 
       let myChart;
       let rawData = [];
-      let dataset1Data = []; // ข้อมูลสำหรับเส้นที่ 1 (น้ำเงิน)
-      let dataset2Data = []; // ข้อมูลสำหรับเส้นที่ 2 (เขียว)
+      let dataset1Data = []; 
+      let dataset2Data = []; 
       let showDataLabels = false;
       let currentMode = "add"; 
 
       // ================= EXPORT EXCEL =================
       function exportToExcel() {
         const combinedData = [...dataset1Data, ...dataset2Data];
-        // ตัดข้อมูลที่ซ้ำกันออก (กรณีบางแถวตรงกับทั้ง Filter 1 และ 2)
         const uniqueData = Array.from(new Set(combinedData.map(a => a.No))).map(id => combinedData.find(a => a.No === id));
         
         if (uniqueData.length === 0) {
@@ -207,17 +207,17 @@
           return;
         }
 
-        const shiftMap = { Morning: "Morning", Evening: "Evening", Night: "Night" };
+        const shiftMap = { Morning: "08.00น.", Evening: "16.00น.", Night: "00.00น." };
         const exportData = uniqueData.map((row) => ({
           "วันที่ (Date)": row.DATE || "-",
-          "กะ (Shift)": shiftMap[row.Shift] || row.Shift || "-",
+          "เวลา (Time)": shiftMap[row.Shift] || row.Shift || "-",
           "ไลน์การผลิต (Line)": row.Line ? "Line " + row.Line : "-",
           "รุ่น (Pattern)": row.Pattern || "-",
           "ขนาด (Size)": row.Size || "-",
           "ค่า Seed": row.Seed !== null ? row.Seed : "",
           "อุณหภูมิ Temp B2 (°C)": row.TempB2 !== null ? row.TempB2 : "",
           "อุณหภูมิ Climate (°C)": row.Climate !== null ? Number(row.Climate).toFixed(1) : "",
-          "Job Change": row.JobChange == 1 ? "✔ ใช่" : ""
+          "Job Change (เปลี่ยนรุ่น)": row.JobChange == 1 ? "✔ ใช่" : ""
         }));
 
         const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -245,7 +245,6 @@
         });
       }
 
-      // ฟังก์ชันสำหรับกรองข้อมูลชุดใดชุดหนึ่ง
       function filterDataset(data, shiftId, lineId, patternId) {
         const shiftFilter = document.getElementById(shiftId).value;
         const lineFilter = document.getElementById(lineId).value;
@@ -260,7 +259,6 @@
       }
 
       function applyFilters() {
-        // กรองแยกกัน 2 ชุด
         dataset1Data = filterDataset(rawData, "f1-shift", "f1-line", "f1-pattern");
         dataset2Data = filterDataset(rawData, "f2-shift", "f2-line", "f2-pattern");
 
@@ -283,7 +281,7 @@
         applyFilters();
       }
 
-      // ================= CRUD (เหมือนเดิม) =================
+      // ================= CRUD FUNCTIONS =================
       function openModal(mode, rowStr = null) {
         const modal = document.getElementById("crud-modal");
         const title = document.getElementById("modal-title");
@@ -323,8 +321,7 @@
       function closeModal() { document.getElementById("crud-modal").classList.add("hidden"); }
 
       async function saveData() {
-        const lineElement = document.getElementById("form-line");
-        const lineValue = lineElement.value; 
+        const lineValue = document.getElementById("form-line").value; 
         const dataPayload = {
           DATE: document.getElementById("form-date").value,
           Shift: document.getElementById("form-shift").value,
@@ -376,7 +373,6 @@
 
           populatePatternFilter();
           
-          // ตั้งค่าตั้งต้นให้ เส้น 1 เป็น Line 2, เส้น 2 เป็น Line 3 แล้วกด Apply
           document.getElementById("f1-line").value = "2";
           document.getElementById("f2-line").value = "3";
           applyFilters();
@@ -387,11 +383,39 @@
       }
 
       function renderChart() {
-        // 1. นำข้อมูลทั้ง 2 ก้อนมารวมกันเพื่อสร้างแกน X (วันที่และกะ) ที่ครบถ้วน
         const allFilteredData = [...dataset1Data, ...dataset2Data];
-        const uniqueKeys = [...new Set(allFilteredData.map(row => `${row.DATE}_${row.Shift}`))].sort();
+        
+        // --- ตัวช่วยแปลงวันที่ ให้กลายเป็นตัวเลขเวลาปฏิทินจริงๆ ---
+        function getRealTime(dateStr) {
+          if (!dateStr) return 0;
+          let d = new Date(dateStr);
+          if (!isNaN(d)) return d.getTime(); // รองรับรูปแบบ YYYY-MM-DD
+          
+          // เผื่อมีข้อมูลเก่าที่พิมพ์เป็น DD/MM/YYYY หรือ DD-MM-YYYY
+          const parts = dateStr.split(/[-/]/);
+          if (parts.length === 3) {
+            d = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+            if (!isNaN(d)) return d.getTime();
+          }
+          return 0; // ถ้าอ่านไม่ออกจริงๆ ให้คืนค่า 0
+        }
 
-        const shiftMap = { Morning: "เช้า", Evening: "เย็น", Night: "กลางคืน" };
+        // ล็อกการเรียงลำดับให้เป็น วันที่(ปฏิทิน) -> กะ (เช้า -> เย็น -> กลางคืน)
+        const shiftOrder = { "Morning": 1, "Evening": 2, "Night": 3 };
+        const uniqueKeys = [...new Set(allFilteredData.map(row => `${row.DATE}_${row.Shift}`))].sort((a, b) => {
+            const [dateA, shiftA] = a.split('_');
+            const [dateB, shiftB] = b.split('_');
+            
+            const timeA = getRealTime(dateA);
+            const timeB = getRealTime(dateB);
+            
+            // 1. เทียบวันที่ก่อน
+            if (timeA !== timeB) return timeA - timeB; 
+            // 2. ถ้าวันเดียวกัน ให้เรียงตามกะ
+            return (shiftOrder[shiftA] || 99) - (shiftOrder[shiftB] || 99); 
+        });
+
+        const shiftMap = { Morning: "08.00น.", Evening: "16.00น.", Night: "00.00น." };
         const labels = [];
         const ds1Line = [];
         const ds2Line = [];
@@ -401,42 +425,36 @@
         
         const isTempActive = document.getElementById("btn-temp").classList.contains("bg-white");
 
-        // 2. เติมข้อมูลลงใน Array ตามลำดับแกน X
         uniqueKeys.forEach(key => {
           const [date, shift] = key.split('_');
-          const thaiShift = shiftMap[shift] || shift;
+          const timeDisplay = shiftMap[shift] || shift;
           
-          // โชว์วันที่เฉพาะกะเย็น (เว้นแต่มีการ Filter กะเฉพาะเจาะจง ให้โชว์วันที่ไปเลย)
           const f1Shift = document.getElementById("f1-shift").value;
           const f2Shift = document.getElementById("f2-shift").value;
           const shiftSpecific = (f1Shift !== "ALL" || f2Shift !== "ALL");
           
-          if (shift === "Evening" || shift === "เย็น" || shiftSpecific) {
-            labels.push([thaiShift, date]);
+          // โชว์วันที่กำกับไว้ที่กะ 16.00 หรือโชว์ทุกจุดถ้ามีการกรองเวลา
+          if (shift === "Evening" || shiftSpecific) {
+            labels.push([timeDisplay, date]);
           } else {
-            labels.push([thaiShift, ""]);
+            labels.push([timeDisplay, ""]);
           }
 
-          // หาข้อมูลของจุดนี้ใน Dataset 1
           const match1 = dataset1Data.find(r => r.DATE === date && r.Shift === shift);
           ds1Line.push(match1 ? match1.Seed : null);
           jc1Data.push(match1 ? match1.JobChange : null);
 
-          // หาข้อมูลของจุดนี้ใน Dataset 2
           const match2 = dataset2Data.find(r => r.DATE === date && r.Shift === shift);
           ds2Line.push(match2 ? match2.Seed : null);
           jc2Data.push(match2 ? match2.JobChange : null);
 
-          // อุณหภูมิยึดตามจุดที่มีข้อมูล
           const tempMatch = match1 || match2; 
           tempB2Data.push(tempMatch ? (isTempActive ? tempMatch.TempB2 : tempMatch.Climate) : null);
         });
 
-        // 3. เริ่มวาดกราฟ
         const ctx = document.getElementById("qcChart").getContext("2d");
         if (myChart) myChart.destroy();
 
-        // สร้างชื่อ Label ของเส้นกราฟอัตโนมัติตาม Filter
         const getLabelName = (num) => {
           const line = document.getElementById(`f${num}-line`).value;
           const shift = document.getElementById(`f${num}-shift`).value;
@@ -484,16 +502,16 @@
                   color: (ctx) => {
                     if (ctx.index === undefined || !uniqueKeys[ctx.index]) return "transparent";
                     const shift = uniqueKeys[ctx.index].split('_')[1];
-                    return (shift === "Morning" || shift === "เช้า") ? "rgba(156, 163, 175, 0.6)" : "transparent";
+                    return (shift === "Morning") ? "rgba(156, 163, 175, 0.6)" : "transparent";
                   },
                   lineWidth: (ctx) => {
                     if (ctx.index === undefined || !uniqueKeys[ctx.index]) return 0;
                     const shift = uniqueKeys[ctx.index].split('_')[1];
-                    return (shift === "Morning" || shift === "เช้า") ? 1.5 : 0;
+                    return (shift === "Morning") ? 1.5 : 0;
                   },
                 },
               },
-              y: { min: 30, max: 1400, title: { display: true, text: "Seed Count", font: { weight: "bold" } } },
+              y: { min: -50, max: 1200, title: { display: true, text: "Seed Count", font: { weight: "bold" } } },
               yTemp: { position: "right", min: isTempActive ? 1220 : 0, max: isTempActive ? 1260 : 35, title: { display: true, text: "Temperature (°C)", font: { weight: "bold" } }, grid: { drawOnChartArea: false } },
             },
             plugins: {
@@ -512,16 +530,17 @@
         const tableBody = document.getElementById("table-body");
         tableBody.innerHTML = "";
         
-        // แนบป้ายกำกับให้ข้อมูลแต่ละก้อนเพื่อโชว์ในตาราง
         const ds1Labeled = dataset1Data.map(r => ({...r, GroupLabel: "ชุดที่ 1 (น้ำเงิน)"}));
         const ds2Labeled = dataset2Data.map(r => ({...r, GroupLabel: "ชุดที่ 2 (เขียว)"}));
         
-        const combinedData = [...ds1Labeled, ...ds2Labeled].sort((a,b) => b.No - a.No); // เรียงล่าสุดขึ้นก่อน
+        const combinedData = [...ds1Labeled, ...ds2Labeled].sort((a,b) => b.No - a.No); 
 
         if(combinedData.length === 0) {
            tableBody.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center text-gray-500 font-medium italic">ไม่พบข้อมูลที่ค้นหา</td></tr>`;
            return;
         }
+
+        const shiftMap = { Morning: "08.00", Evening: "16.00", Night: "00.00" };
 
         combinedData.forEach((row) => {
           const tr = document.createElement("tr");
@@ -529,17 +548,18 @@
           tr.setAttribute("onclick", `openModal('edit', '${rowString}')`);
           tr.className = "hover:bg-blue-100 transition-colors border-b cursor-pointer"; 
 
-          const climateDisplay = row.Climate !== null ? Number(row.Climate).toFixed(1) : "-";
+          
           const groupColor = row.GroupLabel.includes("น้ำเงิน") ? "text-blue-600 bg-blue-50" : "text-green-600 bg-green-50";
+          const timeDisplay = shiftMap[row.Shift] || row.Shift || "-";
           
           tr.innerHTML = `
             <td class="px-4 py-3 md:px-6 md:py-4 text-xs md:text-sm font-bold ${groupColor} whitespace-nowrap rounded-lg m-1 inline-block">${row.GroupLabel}</td>
             <td class="px-4 py-3 md:px-6 md:py-4 text-xs md:text-sm font-medium text-gray-900 whitespace-nowrap">${row.DATE || "-"}</td>
-            <td class="px-4 py-3 md:px-6 md:py-4 text-xs md:text-sm text-gray-600 whitespace-nowrap">${row.Shift || "-"}</td>
+            <td class="px-4 py-3 md:px-6 md:py-4 text-xs md:text-sm text-gray-600 whitespace-nowrap">${timeDisplay}</td>
             <td class="px-4 py-3 md:px-6 md:py-4 text-xs md:text-sm font-bold text-gray-700 whitespace-nowrap">${row.Line ? "Line " + row.Line : "-"}</td>
             <td class="px-4 py-3 md:px-6 md:py-4 text-xs md:text-sm text-gray-600 whitespace-nowrap">${row.Pattern || "-"} / ${row.Size || "-"}</td>
             <td class="px-4 py-3 md:px-6 md:py-4 text-xs md:text-sm font-bold text-gray-800 whitespace-nowrap">${row.Seed || "0"}</td>
-            <td class="px-4 py-3 md:px-6 md:py-4 text-xs md:text-sm text-gray-600 whitespace-nowrap"><span class="text-red-500 font-semibold">${row.TempB2 || "-"}°C</span> / <span class="text-orange-500">${climateDisplay}°C</span></td>
+            <td class="px-4 py-3 md:px-6 md:py-4 text-xs md:text-sm text-gray-600 whitespace-nowrap"><span class="text-red-500 font-semibold">${row.TempB2 || "-"}°C</span>
           `;
           tableBody.appendChild(tr);
         });
