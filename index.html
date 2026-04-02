@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard QC - Bangkok Crystal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+  </head>
+  <body class="bg-gray-50 text-gray-800 font-sans min-h-screen p-4 md:p-10">
+    <div class="max-w-7xl mx-auto">
+      <div
+        class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4"
+      >
+        <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">
+          รายงานวิเคราะห์แนวโน้ม <span class="text-blue-600">Seed</span>
+        </h1>
+
+        <div class="flex flex-wrap gap-4 items-center">
+          <button
+            onclick="openModal('add')"
+            class="px-5 py-2 rounded-xl text-sm font-bold bg-green-500 text-white shadow hover:bg-green-600 transition-all"
+          >
+            + เพิ่มข้อมูล
+          </button>
+
+          <div
+            class="flex bg-gray-200 p-1 rounded-xl shadow-inner border border-gray-300"
+          >
+            <button
+              onclick="toggleLabels()"
+              id="btn-labels"
+              class="px-4 py-2 rounded-lg text-sm font-bold transition-all text-gray-500 hover:text-gray-700"
+            >
+              แสดงตัวเลข
+            </button>
+          </div>
+
+          <div
+            class="flex bg-gray-200 p-1 rounded-xl shadow-inner border border-gray-300"
+          >
+            <button
+              onclick="updateTempAxis('TempB2')"
+              id="btn-temp"
+              class="px-4 py-2 rounded-lg text-sm font-bold transition-all bg-white shadow text-blue-600"
+            >
+              Temp B2
+            </button>
+            <button
+              onclick="updateTempAxis('Climate')"
+              id="btn-climate"
+              class="px-4 py-2 rounded-lg text-sm font-bold transition-all text-gray-500 hover:text-gray-700"
+            >
+              Climate
+            </button>
+          </div>
+
+          <div
+            class="flex bg-gray-100 p-1 rounded-xl shadow-inner border border-gray-300"
+          >
+            <button
+              onclick="setRange(7)"
+              class="px-3 py-2 text-xs font-bold hover:text-blue-600 border-r border-gray-300"
+            >
+              7 วัน
+            </button>
+            <button
+              onclick="setRange(14)"
+              class="px-3 py-2 text-xs font-bold hover:text-blue-600 border-r border-gray-300"
+            >
+              14 วัน
+            </button>
+            <button
+              onclick="setRange(30)"
+              class="px-3 py-2 text-xs font-bold hover:text-blue-600 border-r border-gray-300"
+            >
+              30 วัน
+            </button>
+            <button
+              onclick="resetZoom()"
+              class="px-3 py-2 text-xs font-bold hover:text-blue-600"
+            >
+              ทั้งหมด
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="bg-white p-6 rounded-2xl shadow-xl border border-gray-100 mb-10"
+      >
+        <div style="height: 500px">
+          <canvas id="qcChart"></canvas>
+        </div>
+        <p class="text-center text-xs text-gray-400 mt-4 italic">
+          * ซูม: เลื่อนลูกกลิ้งเมาส์ | เลื่อนกราฟ:
+          คลิกซ้ายค้างไว้แล้วลากซ้าย-ขวา
+        </p>
+      </div>
+
+      <div
+        class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden"
+      >
+        <div class="p-6 border-b border-gray-100 bg-gray-50">
+          <h2 class="text-xl font-bold text-gray-800">
+            ตารางข้อมูลล่าสุด
+            <span class="text-sm font-normal text-gray-500"
+              >(คลิกที่แถวเพื่อแก้ไข/ลบข้อมูล)</span
+            >
+          </h2>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full">
+            <thead class="bg-blue-50">
+              <tr>
+                <th
+                  class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase"
+                >
+                  วันที่ (DATE)
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase"
+                >
+                  กะ (Shift)
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase"
+                >
+                  ไลน์การผลิต
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase"
+                >
+                  รุ่น (Pattern) / Size
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase"
+                >
+                  ค่า Seed
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase"
+                >
+                  Temp B2 / Climate
+                </th>
+              </tr>
+            </thead>
+            <tbody id="table-body" class="divide-y divide-gray-100">
+              <tr>
+                <td
+                  colspan="5"
+                  class="px-6 py-10 text-center text-gray-500 font-medium italic"
+                >
+                  กำลังโหลดข้อมูล...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="crud-modal"
+      class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden"
+      >
+        <div
+          class="bg-blue-600 p-4 text-white flex justify-between items-center"
+        >
+          <h3 id="modal-title" class="text-lg font-bold">เพิ่มข้อมูล</h3>
+          <button
+            onclick="closeModal()"
+            class="text-white hover:text-gray-200 font-bold text-xl"
+          >
+            &times;
+          </button>
+        </div>
+
+        <div class="p-6 space-y-4">
+          <div
+            class="flex items-center space-x-2 p-2 bg-blue-50 rounded-lg border border-blue-100"
+          >
+            <input
+              type="checkbox"
+              id="form-jobchange"
+              class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+            />
+            <label
+              for="form-jobchange"
+              class="text-sm font-bold text-blue-800 cursor-pointer"
+            >
+              Job Change (มีการเปลี่ยนรุ่นการผลิต)
+            </label>
+          </div>
+          <input type="hidden" id="form-no" />
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700"
+                >วันที่</label
+              ><input
+                type="date"
+                id="form-date"
+                placeholder="เช่น 5 Mar 26"
+                class="mt-1 w-full border border-gray-300 rounded-lg p-2"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700"
+                >กะ (Shift)</label
+              >
+              <select
+                id="form-shift"
+                class="mt-1 w-full border border-gray-300 rounded-lg p-2"
+              >
+                <option value="Morning">Morning (เช้า)</option>
+                <option value="Evening">Evening (เย็น)</option>
+                <option value="Night">Night (กลางคืน)</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700"
+                >ไลน์การผลิต</label
+              ><select
+                id="form-line"
+                class="mt-1 w-full border border-gray-300 rounded-lg p-2"
+              >
+                <option value="2">Line 2</option>
+                <option value="3">Line 3</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700"
+                >ค่า Seed <span class="text-red-500">*ค่าเฉลี่ย</span></label
+              ><input
+                type="number"
+                step="0.1"
+                id="form-seed"
+                class="mt-1 w-full border border-gray-300 rounded-lg p-2"
+              />
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700"
+                >Pattern</label
+              ><input
+                type="text"
+                id="form-pattern"
+                class="mt-1 w-full border border-gray-300 rounded-lg p-2"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-gray-700"
+                >Size</label
+              ><input
+                type="text"
+                id="form-size"
+                placeholder="เช่น 80mm"
+                class="mt-1 w-full border border-gray-300 rounded-lg p-2"
+              />
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700"
+                >Temp B2</label
+              ><input
+                type="number"
+                id="form-tempb2"
+                class="mt-1 w-full border border-gray-300 rounded-lg p-2"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700"
+                >อุณหภูมิ <span class="text-red-500">(องศา)</span></label
+              ><input
+                type="number"
+                step="0.1"
+                id="form-climate"
+                class="mt-1 w-full border border-gray-300 rounded-lg p-2"
+              />
+            </div>
+          </div>
+        </div>
+        <div
+          class="bg-gray-50 p-4 border-t border-gray-100 flex justify-between items-center"
+        >
+          <button
+            id="btn-delete"
+            onclick="deleteData()"
+            class="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-bold shadow hover:bg-red-600 hidden"
+          >
+            ลบข้อมูล
+          </button>
+          <div class="flex gap-2 w-full justify-end">
+            <button
+              onclick="closeModal()"
+              class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg text-sm font-bold hover:bg-gray-400"
+            >
+              ยกเลิก
+            </button>
+            <button
+              onclick="saveData()"
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold shadow hover:bg-blue-700"
+            >
+              บันทึกข้อมูล
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      Chart.register(ChartDataLabels);
+
+      const SUPABASE_URL = "https://twrfuwhqbltrjbzohepy.supabase.co";
+      const SUPABASE_KEY =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3cmZ1d2hxYmx0cmpiem9oZXB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5OTA4MzYsImV4cCI6MjA5MDU2NjgzNn0._JRdATjIdVb7qpDkEvJbHrGuswuRNdQ3jPuXolKYTKU";
+
+      const { createClient } = supabase;
+      const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+      let myChart;
+      let rawData = [];
+      let showDataLabels = false;
+      let currentMode = "add"; // 'add' หรือ 'edit'
+
+      // ================= CRUD FUNCTIONS =================
+      function openModal(mode, rowStr = null) {
+        const modal = document.getElementById("crud-modal");
+        const title = document.getElementById("modal-title");
+        const btnDelete = document.getElementById("btn-delete");
+
+        currentMode = mode;
+
+        if (mode === "add") {
+          title.innerText = "เพิ่มข้อมูลใหม่";
+          btnDelete.classList.add("hidden");
+          // ล้างค่าใน Form
+          document.getElementById("form-no").value = "";
+          document.getElementById("form-date").value = "";
+          document.getElementById("form-shift").value = "Morning";
+          document.getElementById("form-line").value = "";
+          document.getElementById("form-seed").value = "";
+          document.getElementById("form-pattern").value = "";
+          document.getElementById("form-size").value = "";
+          document.getElementById("form-tempb2").value = "";
+          document.getElementById("form-climate").value = "";
+        } else if (mode === "edit" && rowStr) {
+          title.innerText = "แก้ไข / ลบข้อมูล";
+          btnDelete.classList.remove("hidden");
+
+          const row = JSON.parse(decodeURIComponent(rowStr));
+          document.getElementById("form-no").value = row.No;
+          document.getElementById("form-date").value = row.DATE || "";
+          document.getElementById("form-shift").value = row.Shift || "Morning";
+          document.getElementById("form-line").value = row.Line || "";
+          document.getElementById("form-seed").value = row.Seed || "";
+          document.getElementById("form-pattern").value = row.Pattern || "";
+          document.getElementById("form-size").value = row.Size || "";
+          document.getElementById("form-tempb2").value = row.TempB2 || "";
+          document.getElementById("form-climate").value =
+            row.Climate !== null ? Number(row.Climate).toFixed(1) : "";
+          document.getElementById("form-jobchange").checked = (row.JobChange == 1);
+        }
+
+        modal.classList.remove("hidden");
+      }
+
+      function closeModal() {
+        document.getElementById("crud-modal").classList.add("hidden");
+      }
+
+      async function saveData() {
+        const lineElement = document.getElementById("form-line");
+        const lineValue = lineElement.value; // จะได้ "2" หรือ "3" เป็น String
+
+        const dataPayload = {
+          DATE: document.getElementById("form-date").value,
+          Shift: document.getElementById("form-shift").value,
+          Line: lineValue ? parseInt(lineValue) : null,
+          Seed: parseFloat(document.getElementById("form-seed").value) || null,
+          Pattern: document.getElementById("form-pattern").value,
+          Size: document.getElementById("form-size").value,
+          TempB2:
+            parseInt(document.getElementById("form-tempb2").value) || null,
+          Climate:
+            parseFloat(document.getElementById("form-climate").value) || null,
+          JobChange: document.getElementById("form-jobchange").checked ? 1 : null
+        };
+
+        try {
+          if (currentMode === "add") {
+            const { error } = await supabaseClient
+              .from("SEED Count")
+              .insert([dataPayload]);
+            if (error) throw error;
+            alert("เพิ่มข้อมูลสำเร็จ!");
+          } else if (currentMode === "edit") {
+            const noId = document.getElementById("form-no").value;
+            const { error } = await supabaseClient
+              .from("SEED Count")
+              .update(dataPayload)
+              .eq("No", noId);
+            if (error) throw error;
+            alert("อัปเดตข้อมูลสำเร็จ!");
+          }
+          closeModal();
+          fetchQCData(); // โหลดข้อมูลใหม่เพื่อรีเฟรชกราฟและตาราง
+        } catch (error) {
+          alert("เกิดข้อผิดพลาด: " + error.message);
+        }
+      }
+
+      async function deleteData() {
+        if (!confirm("คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลแถวนี้?")) return;
+
+        const noId = document.getElementById("form-no").value;
+        try {
+          const { error } = await supabaseClient
+            .from("SEED Count")
+            .delete()
+            .eq("No", noId);
+          if (error) throw error;
+          alert("ลบข้อมูลสำเร็จ!");
+          closeModal();
+          fetchQCData();
+        } catch (error) {
+          alert("เกิดข้อผิดพลาด: " + error.message);
+        }
+      }
+
+      // ================= CHART & DATA FUNCTIONS =================
+      async function fetchQCData() {
+        const tableBody = document.getElementById("table-body");
+        try {
+          const { data, error } = await supabaseClient
+            .from("SEED Count")
+            .select("*")
+            .order("No", { ascending: true })
+            .limit(1000);
+          if (error) throw error;
+
+          rawData = data.map((row) => ({
+            ...row,
+            Climate:
+              row.Climate !== null && row.Climate !== ""
+                ? parseFloat(Number(row.Climate).toFixed(1))
+                : null,
+          }));
+
+          renderChart();
+          renderTable(rawData);
+        } catch (err) {
+          tableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-10 text-center text-red-500 font-bold italic">เกิดข้อผิดพลาด: ${err.message}</td></tr>`;
+        }
+      }
+
+      function renderChart() {
+        const shiftMap = { Morning: "เช้า", Evening: "เย็น", Night: "กลางคืน" };
+        const labels = rawData.map((row) => {
+          const thaiShift = shiftMap[row.Shift] || row.Shift;
+          return row.Shift === "Evening" || row.Shift === "เย็น"
+            ? [thaiShift, row.DATE || ""]
+            : [thaiShift, ""];
+        });
+
+        const line2Data = rawData.map((row) =>
+          row.Line == 2 ? row.Seed : null,
+        );
+        const line3Data = rawData.map((row) =>
+          row.Line == 3 ? row.Seed : null,
+        );
+        const tempB2Data = rawData.map((row) => row.TempB2);
+
+        const ctx = document.getElementById("qcChart").getContext("2d");
+        if (myChart) myChart.destroy();
+
+        myChart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: "Seed: Line 2",
+                data: line2Data,
+                borderColor: "#3b82f6",
+                borderWidth: 3,
+                // --- เพิ่มตรรกะ Job Change ให้ Line 2 ---
+                pointRadius: (context) => {
+                  const index = context.dataIndex;
+                  // ถ้ามีการเปลี่ยนรุ่น ให้จุดขยายเป็นขนาด 8, ถ้าไม่มีให้ยึดตามค่าโชว์ตัวเลข (3 หรือ 0)
+                  return (rawData[index] && rawData[index].JobChange == 1) ? 6 : (showDataLabels ? 3 : 3);
+                },
+                pointBorderWidth: (context) => {
+                  const index = context.dataIndex;
+                  return (rawData[index] && rawData[index].JobChange == 1) ? 3 : 1;
+                },
+                pointBorderColor: (context) => {
+                  const index = context.dataIndex;
+                  return (rawData[index] && rawData[index].JobChange == 1) ? "#e51c23" : "#3b82f6";
+                },
+                pointBackgroundColor: (context) => {
+                  const index = context.dataIndex;
+                  return (rawData[index] && rawData[index].JobChange == 1) ? "#fff" : "#3b82f6"; // สีขาวเพื่อให้เป็นวงแหวน
+                },
+                spanGaps: true,
+              },
+              {
+                label: "Seed: Line 3",
+                data: line3Data,
+                borderColor: "#10b981",
+                borderWidth: 3,
+                // --- เพิ่มตรรกะ Job Change ให้ Line 3 ---
+                pointRadius: (context) => {
+                  const index = context.dataIndex;
+                  return (rawData[index] && rawData[index].JobChange == 1) ? 6 : (showDataLabels ? 3 : 3);
+                },
+                pointBorderWidth: (context) => {
+                  const index = context.dataIndex;
+                  return (rawData[index] && rawData[index].JobChange == 1) ? 3 : 1;
+                },
+                pointBackgroundColor: (context) => {
+                  const index = context.dataIndex;
+                  return (rawData[index] && rawData[index].JobChange == 1) ? "#fff" : "#10b981";
+                },
+                pointBorderColor: (context) => {
+                  const index = context.dataIndex;
+                  return (rawData[index] && rawData[index].JobChange == 1) ? "#e51c23" : "#10b981";
+                },
+                spanGaps: true,
+              },
+              {
+                label: "อุณหภูมิ (Temp B2)",
+                data: tempB2Data,
+                borderColor: "#ef4444",
+                borderWidth: 3,
+                // อุณหภูมิไม่ต้องเน้น Job Change ก็ได้ (แต่ถ้าอยากเน้นก็ก๊อปโค้ดด้านบนมาใส่ได้ครับ)
+                pointRadius: () => (showDataLabels ? 3 : 0),
+                fill: false,
+                yAxisID: "yTemp",
+                tension: 0.3,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: {
+                ticks: {
+                  maxRotation: 0,
+                  minRotation: 0,
+                  font: { size: 10, weight: "bold" },
+                },
+                grid: {
+                  display: true,
+                  drawOnChartArea: true,
+                  color: (context) =>
+                    context.index !== undefined &&
+                    rawData[context.index] &&
+                    (rawData[context.index].Shift === "Morning" ||
+                      rawData[context.index].Shift === "เช้า")
+                      ? "rgba(156, 163, 175, 0.6)"
+                      : "transparent",
+                  lineWidth: (context) =>
+                    context.index !== undefined &&
+                    rawData[context.index] &&
+                    (rawData[context.index].Shift === "Morning" ||
+                      rawData[context.index].Shift === "เช้า")
+                      ? 1.5
+                      : 0,
+                },
+              },
+              y: {
+                min: 30,
+                max: 1400,
+                title: {
+                  display: true,
+                  text: "Seed Count",
+                  font: { weight: "bold" },
+                },
+              },
+              yTemp: {
+                position: "right",
+                min: 1220,
+                max: 1260,
+                title: {
+                  display: true,
+                  text: "Temperature (°C)",
+                  font: { weight: "bold" },
+                },
+                grid: { drawOnChartArea: false },
+              },
+            },
+            plugins: {
+              legend: { position: "top", labels: { usePointStyle: true } },
+              zoom: {
+                pan: { enabled: true, mode: "x" },
+                zoom: {
+                  wheel: { enabled: true },
+                  pinch: { enabled: true },
+                  mode: "x",
+                },
+              },
+              datalabels: {
+                display: () => showDataLabels,
+                font: { size: 9, weight: "bold" },
+                color: (context) => context.dataset.borderColor,
+                align: "top",
+                offset: 4,
+                formatter: (value, context) =>
+                  value === null
+                    ? ""
+                    : context.datasetIndex === 2 &&
+                      context.dataset.label.includes("Climate")
+                    ? Number(value).toFixed(1)
+                    : value,
+              },
+            },
+          },
+        });
+      }
+      function renderTable(data) {
+        const tableBody = document.getElementById("table-body");
+        tableBody.innerHTML = "";
+        const tableData = [...data].reverse();
+
+        tableData.forEach((row) => {
+          const tr = document.createElement("tr");
+          // ทำให้แถวคลิกได้ และส่งข้อมูลแถวนั้นเข้า Modal
+          const rowString = encodeURIComponent(JSON.stringify(row));
+          tr.setAttribute("onclick", `openModal('edit', '${rowString}')`);
+          tr.className =
+            "hover:bg-blue-100 transition-colors border-b cursor-pointer"; // เพิ่ม cursor-pointer
+
+          const climateDisplay =
+            row.Climate !== null ? Number(row.Climate).toFixed(1) : "-";
+          tr.innerHTML = `
+            <td class="px-6 py-4 text-sm font-medium text-gray-900">${row.DATE || "-"}</td>
+            <td class="px-6 py-4 text-sm text-gray-600">${row.Shift || "-"}</td>
+            <td class="px-6 py-4 text-sm font-bold text-gray-700">${row.Line ? "Line " + row.Line : "-"}</td>
+            <td class="px-6 py-4 text-sm text-gray-600">${row.Pattern || "-"} / ${row.Size || "-"}</td>
+            <td class="px-6 py-4 text-sm font-bold text-blue-700">${row.Seed || "0"}</td>
+            <td class="px-6 py-4 text-sm text-gray-600"><span class="text-red-500 font-semibold">${row.TempB2 || "-"}°C</span> / <span class="text-orange-500">${climateDisplay}°C</span></td>
+          `;
+          tableBody.appendChild(tr);
+        });
+      }
+
+      // ฟังก์ชันควบคุมกราฟเดิม...
+      function updateTempAxis(type) {
+        const isTemp = type === "TempB2";
+        myChart.data.datasets[2].data = rawData.map((row) =>
+          isTemp ? row.TempB2 : row.Climate,
+        );
+        myChart.data.datasets[2].label = isTemp
+          ? "อุณหภูมิ (Temp B2)"
+          : "อุณหภูมิ (Climate)";
+        if (isTemp) {
+          myChart.options.scales.yTemp.min = 1220;
+          myChart.options.scales.yTemp.max = 1260;
+        } else {
+          myChart.options.scales.yTemp.min = 0;
+          myChart.options.scales.yTemp.max = 35;
+        }
+        document.getElementById("btn-temp").className = isTemp
+          ? "px-4 py-2 rounded-lg text-sm font-bold transition-all bg-white shadow text-blue-600"
+          : "px-4 py-2 rounded-lg text-sm font-bold transition-all text-gray-500 hover:text-gray-700";
+        document.getElementById("btn-climate").className = !isTemp
+          ? "px-4 py-2 rounded-lg text-sm font-bold transition-all bg-white shadow text-blue-600"
+          : "px-4 py-2 rounded-lg text-sm font-bold transition-all text-gray-500 hover:text-gray-700";
+        myChart.update();
+      }
+
+      function toggleLabels() {
+        showDataLabels = !showDataLabels; 
+        
+        document.getElementById("btn-labels").innerHTML = showDataLabels ? "❌ ซ่อนตัวเลข" : "แสดงตัวเลข";
+        myChart.update(); // สั่งอัปเดตเฉยๆ กราฟจะวาดใหม่ตามตรรกะ Job Change เองครับ
+      }
+
+      function setRange(days) {
+        const pointsToShow = days * 6; 
+        const total = rawData.length;
+        showDataLabels = (days <= 14);
+        
+        document.getElementById("btn-labels").innerHTML = showDataLabels ? "❌ ซ่อนตัวเลข" : "แสดงตัวเลข";
+        myChart.zoomScale('x', { min: Math.max(0, total - pointsToShow), max: total }, 'default');
+        myChart.update(); 
+      }
+
+
+      function resetZoom() {
+        showDataLabels = false; 
+        
+        document.getElementById("btn-labels").innerHTML = "แสดงตัวเลข";
+        myChart.resetZoom();
+        myChart.update();
+      }
+
+      window.onload = fetchQCData;
+    </script>
+  </body>
+</html>
