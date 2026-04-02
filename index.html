@@ -10,6 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
       .hide-scrollbar::-webkit-scrollbar { display: none; }
       .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -32,17 +33,25 @@
             </button>
           </div>
 
-          <div class="flex flex-shrink-0 bg-gray-200 p-1 rounded-xl shadow-inner border border-gray-300 snap-start">
+          <div class="flex-shrink-0 snap-start">
             <button
-              onclick="toggleLabels()"
-              id="btn-labels"
-              class="px-4 py-2 rounded-lg text-sm font-bold transition-all text-gray-500 hover:text-gray-700 whitespace-nowrap"
+              onclick="exportToExcel()"
+              class="h-full px-5 py-2 rounded-xl text-sm font-bold bg-indigo-500 text-white shadow hover:bg-indigo-600 transition-all flex items-center whitespace-nowrap"
             >
-              แสดงตัวเลข
+              Export to Excel
             </button>
           </div>
 
-          <div class="flex flex-shrink-0 bg-gray-200 p-1 rounded-xl shadow-inner border border-gray-300 snap-start">
+          
+
+          <div class="gap-2 flex flex-shrink-0 bg-gray-200 p-1 rounded-xl shadow-inner border border-gray-300 snap-start">
+            <button
+              onclick="toggleLabels()"
+              id="btn-labels"
+              class="px-4 py-2 rounded-lg text-sm font-bold transition-all bg-white shadow text-blue-600 whitespace-nowrap"
+            >
+              แสดงตัวเลข
+            </button>
             <button
               onclick="updateTempAxis('TempB2')"
               id="btn-temp"
@@ -59,11 +68,11 @@
             </button>
           </div>
 
-          <div class="flex flex-shrink-0 bg-gray-100 p-1 rounded-xl shadow-inner border border-gray-300 snap-start">
-            <button onclick="setRange(7)" class="px-3 py-2 text-xs font-bold hover:text-blue-600 border-r border-gray-300 whitespace-nowrap">7 วัน</button>
-            <button onclick="setRange(14)" class="px-3 py-2 text-xs font-bold hover:text-blue-600 border-r border-gray-300 whitespace-nowrap">14 วัน</button>
-            <button onclick="setRange(30)" class="px-3 py-2 text-xs font-bold hover:text-blue-600 border-r border-gray-300 whitespace-nowrap">30 วัน</button>
-            <button onclick="resetZoom()" class="px-3 py-2 text-xs font-bold hover:text-blue-600 whitespace-nowrap">ทั้งหมด</button>
+          <div class="flex flex-shrink-0 bg-gray-200 p-1 rounded-xl shadow-inner border border-gray-300 snap-start">
+            <button id="btn-range-7" onclick="setRange(7)" class="px-3 py-2 text-xs font-bold transition-all text-gray-500 hover:text-gray-700 rounded-lg whitespace-nowrap">7 วัน</button>
+            <button id="btn-range-14" onclick="setRange(14)" class="px-3 py-2 text-xs font-bold transition-all text-gray-500 hover:text-gray-700 rounded-lg whitespace-nowrap">14 วัน</button>
+            <button id="btn-range-30" onclick="setRange(30)" class="px-3 py-2 text-xs font-bold transition-all text-gray-500 hover:text-gray-700 rounded-lg whitespace-nowrap">30 วัน</button>
+            <button id="btn-range-all" onclick="resetZoom()" class="px-3 py-2 text-xs font-bold transition-all bg-white shadow text-blue-600 rounded-lg whitespace-nowrap">ทั้งหมด</button>
           </div>
         </div>
       </div>
@@ -263,6 +272,43 @@
       let rawData = [];
       let showDataLabels = false;
       let currentMode = "add"; 
+
+      // ================= EXPORT EXCEL FUNCTION =================
+      function exportToExcel() {
+        if (rawData.length === 0) {
+          alert("ยังไม่มีข้อมูลสำหรับดาวน์โหลดครับ");
+          return;
+        }
+
+        const shiftMap = { Morning: "Morning", Evening: "Evening", Night: "Night" };
+        
+        // จัดเตรียมและแปลงข้อมูลให้เป็นภาษาไทยที่อ่านง่ายสำหรับตาราง Excel
+        const exportData = rawData.map((row) => ({
+          "วันที่ (Date)": row.DATE || "-",
+          "กะ (Shift)": shiftMap[row.Shift] || row.Shift || "-",
+          "ไลน์การผลิต (Line)": row.Line ? "Line " + row.Line : "-",
+          "รุ่น (Pattern)": row.Pattern || "-",
+          "ขนาด (Size)": row.Size || "-",
+          "ค่า Seed": row.Seed !== null ? row.Seed : "",
+          "อุณหภูมิ Temp B2 (°C)": row.TempB2 !== null ? row.TempB2 : "",
+          "อุณหภูมิ Climate (°C)": row.Climate !== null ? Number(row.Climate).toFixed(1) : "",
+          "Job Change (เปลี่ยนรุ่น)": row.JobChange == 1 ? "✔ ใช่" : ""
+        }));
+
+        // สร้างแผ่นงาน (Worksheet) จากข้อมูลที่จัดเตรียมไว้
+        const worksheet = XLSX.utils.json_to_sheet(exportData);
+        // สร้างสมุดงาน (Workbook)
+        const workbook = XLSX.utils.book_new();
+        // นำแผ่นงานไปใส่ในสมุดงาน
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Lab Data");
+
+        // สร้างชื่อไฟล์ตามวันที่ปัจจุบัน (เช่น QC_Report_2026-04-02.xlsx)
+        const today = new Date().toISOString().split('T')[0];
+        
+        // สั่งสร้างไฟล์และดาวน์โหลด
+        XLSX.writeFile(workbook, `Lab_Report_SEED${today}.xlsx`);
+      }
+      // ========================================================
 
       function openModal(mode, rowStr = null) {
         const modal = document.getElementById("crud-modal");
@@ -562,7 +608,6 @@
 
           const climateDisplay = row.Climate !== null ? Number(row.Climate).toFixed(1) : "-";
           
-          // ปรับ CSS ของช่องตารางให้เล็กลงในหน้าจอมือถือ (text-xs) และกันตัวหนังสือพัง (whitespace-nowrap)
           tr.innerHTML = `
             <td class="px-4 py-3 md:px-6 md:py-4 text-xs md:text-sm font-medium text-gray-900 whitespace-nowrap">${row.DATE || "-"}</td>
             <td class="px-4 py-3 md:px-6 md:py-4 text-xs md:text-sm text-gray-600 whitespace-nowrap">${row.Shift || "-"}</td>
@@ -606,6 +651,9 @@
       }
 
       function setRange(days) {
+        // อัปเดตสีปุ่มให้สว่างขึ้นตามวันที่เลือก
+        updateRangeUI(`btn-range-${days}`);
+
         const pointsToShow = days * 6; 
         const total = rawData.length;
         showDataLabels = (days <= 14);
@@ -615,10 +663,28 @@
       }
 
       function resetZoom() {
+        // อัปเดตให้ปุ่ม 'ทั้งหมด' สว่างขึ้น
+        updateRangeUI('btn-range-all');
+
         showDataLabels = false; 
         document.getElementById("btn-labels").innerHTML = "แสดงตัวเลข";
         myChart.resetZoom();
         myChart.update();
+      }
+
+      function updateRangeUI(activeId) {
+        const buttonIds = ['btn-range-7', 'btn-range-14', 'btn-range-30', 'btn-range-all'];
+        
+        buttonIds.forEach(id => {
+          const btn = document.getElementById(id);
+          if (id === activeId) {
+            // ถ้าเป็นปุ่มที่ถูกกด ให้เป็นสีขาว ตัวหนังสือสีฟ้า มีเงา
+            btn.className = "px-3 py-2 text-xs font-bold transition-all bg-white shadow text-blue-600 rounded-lg whitespace-nowrap";
+          } else {
+            // ถ้าไม่ได้ถูกกด ให้พื้นหลังกลืนไปกับสีเทา ตัวหนังสือสีเทา
+            btn.className = "px-3 py-2 text-xs font-bold transition-all text-gray-500 hover:text-gray-700 rounded-lg whitespace-nowrap";
+          }
+        });
       }
 
       window.onload = fetchQCData;
