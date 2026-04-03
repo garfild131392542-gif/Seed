@@ -298,7 +298,7 @@
           document.getElementById("form-pattern").value = "";
           document.getElementById("form-size").value = "";
           document.getElementById("form-tempb2").value = "";
-          document.getElementById("form-climate").value = "";
+          
           document.getElementById("form-jobchange").checked = false;
         } else if (mode === "edit" && rowStr) {
           title.innerText = "แก้ไข / ลบข้อมูล";
@@ -312,7 +312,7 @@
           document.getElementById("form-pattern").value = row.Pattern || "";
           document.getElementById("form-size").value = row.Size || "";
           document.getElementById("form-tempb2").value = row.TempB2 || "";
-          document.getElementById("form-climate").value = row.Climate !== null ? Number(row.Climate).toFixed(1) : "";
+          
           document.getElementById("form-jobchange").checked = (row.JobChange == 1);
         }
         modal.classList.remove("hidden");
@@ -330,7 +330,7 @@
           Pattern: document.getElementById("form-pattern").value,
           Size: document.getElementById("form-size").value,
           TempB2: parseInt(document.getElementById("form-tempb2").value) || null,
-          Climate: parseFloat(document.getElementById("form-climate").value) || null,
+          
           JobChange: document.getElementById("form-jobchange").checked ? 1 : null
         };
 
